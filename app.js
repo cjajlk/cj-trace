@@ -1,9 +1,9 @@
 console.log("CJ Trace démarré");
 
 
-/* ==============================
-   ELEMENTS INTERFACE
-================================ */
+/* =========================================================
+   ELEMENTS DE LA PAGE
+========================================================= */
 
 const imagePicker =
     document.getElementById("imagePicker");
@@ -34,9 +34,9 @@ let selectedImage = null;
 
 
 
-/* ==============================
-   CHOISIR IMAGE
-================================ */
+/* =========================================================
+   CHOIX DE L'IMAGE
+========================================================= */
 
 chooseImage.addEventListener(
     "click",
@@ -72,16 +72,13 @@ imagePicker.addEventListener(
 
 
         if (
-            !file.type.startsWith(
-                "image/"
-            )
+            !file.type.startsWith("image/")
         ) {
 
             status.textContent =
                 "Ce fichier n'est pas une image.";
 
             return;
-
         }
 
 
@@ -120,9 +117,9 @@ imagePicker.addEventListener(
 
 
 
-/* ==============================
-   COMMENCER
-================================ */
+/* =========================================================
+   BOUTON COMMENCER
+========================================================= */
 
 startAR.addEventListener(
     "click",
@@ -151,10 +148,9 @@ startAR.addEventListener(
         try {
 
             const supported =
-                await navigator.xr
-                    .isSessionSupported(
-                        "immersive-ar"
-                    );
+                await navigator.xr.isSessionSupported(
+                    "immersive-ar"
+                );
 
 
             if (!supported) {
@@ -176,9 +172,7 @@ startAR.addEventListener(
 
         } catch (error) {
 
-            console.error(
-                error
-            );
+            console.error(error);
 
 
             status.textContent =
@@ -191,9 +185,9 @@ startAR.addEventListener(
 
 
 
-/* ==============================
+/* =========================================================
    SESSION AR
-================================ */
+========================================================= */
 
 async function startARSession() {
 
@@ -202,40 +196,41 @@ async function startARSession() {
 
     try {
 
-        /* ==============================
-           OUVERTURE WEBXR
-        ================================ */
+        /*
+          IMPORTANT :
+          requestSession doit rester lié au clic utilisateur.
+        */
 
         session =
-            await navigator.xr
-                .requestSession(
-                    "immersive-ar",
-                    {
+            await navigator.xr.requestSession(
+                "immersive-ar",
+                {
 
-                        optionalFeatures: [
+                    optionalFeatures: [
 
-                            "local-floor",
-                            "bounded-floor",
-                            "hand-tracking"
+                        "local-floor",
+                        "bounded-floor",
+                        "hand-tracking"
 
-                        ]
+                    ]
 
-                    }
-                );
+                }
+            );
 
 
-        /* ==============================
+
+        /* =================================================
            SCENE
-        ================================ */
+        ================================================= */
 
         const scene =
             new THREE.Scene();
 
 
 
-        /* ==============================
+        /* =================================================
            CAMERA
-        ================================ */
+        ================================================= */
 
         const camera =
             new THREE.PerspectiveCamera(
@@ -253,9 +248,9 @@ async function startARSession() {
 
 
 
-        /* ==============================
+        /* =================================================
            RENDERER
-        ================================ */
+        ================================================= */
 
         const renderer =
             new THREE.WebGLRenderer({
@@ -285,26 +280,24 @@ async function startARSession() {
             true;
 
 
-        renderer.xr
-            .setReferenceSpaceType(
-                "local"
-            );
+        renderer.xr.setReferenceSpaceType(
+            "local"
+        );
 
 
 
-        /* ==============================
+        /* =================================================
            CHARGEMENT IMAGE
-        ================================ */
+        ================================================= */
 
         const textureLoader =
             new THREE.TextureLoader();
 
 
         const texture =
-            await textureLoader
-                .loadAsync(
-                    selectedImage
-                );
+            await textureLoader.loadAsync(
+                selectedImage
+            );
 
 
         texture.colorSpace =
@@ -312,9 +305,9 @@ async function startARSession() {
 
 
 
-        /* ==============================
-           FORMAT IMAGE
-        ================================ */
+        /* =================================================
+           DIMENSIONS IMAGE
+        ================================================= */
 
         const imageWidth =
             texture.image.width;
@@ -339,9 +332,9 @@ async function startARSession() {
 
 
 
-        /* ==============================
-           GEOMETRIE
-        ================================ */
+        /* =================================================
+           GEOMETRIE DU DESSIN
+        ================================================= */
 
         const geometry =
             new THREE.PlaneGeometry(
@@ -354,9 +347,9 @@ async function startARSession() {
 
 
 
-        /* ==============================
+        /* =================================================
            MATERIAU
-        ================================ */
+        ================================================= */
 
         const material =
             new THREE.MeshBasicMaterial({
@@ -377,9 +370,9 @@ async function startARSession() {
 
 
 
-        /* ==============================
+        /* =================================================
            DESSIN
-        ================================ */
+        ================================================= */
 
         const drawing =
             new THREE.Mesh(
@@ -408,13 +401,12 @@ async function startARSession() {
 
 
 
-        /* ==============================
+        /* =================================================
            CONTROLEUR PICO
-        ================================ */
+        ================================================= */
 
         const controller =
-            renderer.xr
-                .getController(0);
+            renderer.xr.getController(0);
 
 
         scene.add(
@@ -423,13 +415,12 @@ async function startARSession() {
 
 
 
-        /* ==============================
-           RAYON
-        ================================ */
+        /* =================================================
+           RAYON BLANC
+        ================================================= */
 
         const rayGeometry =
-            new THREE
-                .BufferGeometry()
+            new THREE.BufferGeometry()
                 .setFromPoints([
 
                     new THREE.Vector3(
@@ -472,9 +463,9 @@ async function startARSession() {
 
 
 
-        /* ==============================
-           VARIABLES DEPLACEMENT
-        ================================ */
+        /* =================================================
+           VARIABLES DE DEPLACEMENT
+        ================================================= */
 
         const raycaster =
             new THREE.Raycaster();
@@ -505,18 +496,21 @@ async function startARSession() {
 
 
 
-        /* ==============================
-           MODE INCLINAISON
-        ================================ */
+        /* =================================================
+           ETAT GENERAL
+        ================================================= */
 
         let tiltMode =
             false;
 
 
+        let isLocked =
+            false;
 
-        /* ==============================
-           OPACITE
-        ================================ */
+
+        let menuOpen =
+            false;
+
 
         let opacityPlusPressed =
             false;
@@ -527,14 +521,640 @@ async function startARSession() {
 
 
 
-        /* ==============================
-           CALCUL RAYON
-        ================================ */
+        /* =================================================
+           CREATION TEXTURES DU MENU
+        ================================================= */
+
+        function createCanvasTexture({
+
+            width = 1024,
+
+            height = 512,
+
+            background =
+                "rgba(20,20,30,0.94)",
+
+            border =
+                "rgba(255,255,255,0.30)",
+
+            title = "",
+
+            lines = [],
+
+            titleSize = 70,
+
+            lineSize = 40,
+
+            centered = false
+
+        }) {
+
+            const canvas =
+                document.createElement(
+                    "canvas"
+                );
+
+
+            canvas.width =
+                width;
+
+
+            canvas.height =
+                height;
+
+
+            const ctx =
+                canvas.getContext(
+                    "2d"
+                );
+
+
+            ctx.clearRect(
+                0,
+                0,
+                width,
+                height
+            );
+
+
+            ctx.fillStyle =
+                background;
+
+
+            ctx.fillRect(
+                0,
+                0,
+                width,
+                height
+            );
+
+
+            ctx.strokeStyle =
+                border;
+
+
+            ctx.lineWidth =
+                8;
+
+
+            ctx.strokeRect(
+
+                4,
+
+                4,
+
+                width - 8,
+
+                height - 8
+
+            );
+
+
+            ctx.fillStyle =
+                "#ffffff";
+
+
+            ctx.textBaseline =
+                "middle";
+
+
+            if (title) {
+
+                ctx.font =
+                    `700 ${titleSize}px Arial`;
+
+
+                ctx.textAlign =
+                    centered
+                        ? "center"
+                        : "left";
+
+
+                ctx.fillText(
+
+                    title,
+
+                    centered
+                        ? width / 2
+                        : 55,
+
+                    85
+
+                );
+
+            }
+
+
+            ctx.font =
+                `500 ${lineSize}px Arial`;
+
+
+            ctx.textAlign =
+                centered
+                    ? "center"
+                    : "left";
+
+
+            const startY =
+                title
+                    ? 175
+                    : height / 2;
+
+
+            const spacing =
+                lineSize * 1.45;
+
+
+            lines.forEach(
+                (line, index) => {
+
+                    ctx.fillText(
+
+                        line,
+
+                        centered
+                            ? width / 2
+                            : 55,
+
+                        startY +
+                        index *
+                        spacing
+
+                    );
+
+                }
+            );
+
+
+            const canvasTexture =
+                new THREE.CanvasTexture(
+                    canvas
+                );
+
+
+            canvasTexture.colorSpace =
+                THREE.SRGBColorSpace;
+
+
+            canvasTexture.needsUpdate =
+                true;
+
+
+            return canvasTexture;
+
+        }
+
+
+
+        /* =================================================
+           CREATION PLANE HUD
+        ================================================= */
+
+        function createHudPlane(
+            width,
+            height,
+            textureMap
+        ) {
+
+            const hudGeometry =
+                new THREE.PlaneGeometry(
+
+                    width,
+
+                    height
+
+                );
+
+
+            const hudMaterial =
+                new THREE.MeshBasicMaterial({
+
+                    map:
+                        textureMap,
+
+                    transparent:
+                        true,
+
+                    side:
+                        THREE.DoubleSide,
+
+                    depthTest:
+                        false,
+
+                    depthWrite:
+                        false
+
+                });
+
+
+            const mesh =
+                new THREE.Mesh(
+
+                    hudGeometry,
+
+                    hudMaterial
+
+                );
+
+
+            mesh.renderOrder =
+                1000;
+
+
+            scene.add(
+                mesh
+            );
+
+
+            return mesh;
+
+        }
+
+
+
+        /* =================================================
+           PETIT BOUTON ?
+        ================================================= */
+
+        const menuButtonTexture =
+            createCanvasTexture({
+
+                width:
+                    256,
+
+                height:
+                    256,
+
+                background:
+                    "rgba(80,35,180,0.96)",
+
+                title:
+                    "?",
+
+                titleSize:
+                    150,
+
+                centered:
+                    true
+
+            });
+
+
+        const menuButton =
+            createHudPlane(
+
+                0.12,
+
+                0.12,
+
+                menuButtonTexture
+
+            );
+
+
+
+        /* =================================================
+           PANNEAU AIDE
+        ================================================= */
+
+        const helpPanelTexture =
+            createCanvasTexture({
+
+                width:
+                    1200,
+
+                height:
+                    900,
+
+                title:
+                    "CJ TRACE - COMMANDES",
+
+                titleSize:
+                    62,
+
+                lineSize:
+                    39,
+
+                lines: [
+
+                    "Gâchette avant + viser : déplacer",
+
+                    "Joystick haut / bas : taille",
+
+                    "Joystick gauche / droite : rotation",
+
+                    "Grip + joystick H/B : inclinaison AV/AR",
+
+                    "Grip + joystick G/D : inclinaison latérale",
+
+                    "A / B ou X / Y : opacité + / -",
+
+                    "VERROUILLER : bloque tous les réglages"
+
+                ]
+
+            });
+
+
+        const helpPanel =
+            createHudPlane(
+
+                0.78,
+
+                0.58,
+
+                helpPanelTexture
+
+            );
+
+
+        helpPanel.visible =
+            false;
+
+
+
+        /* =================================================
+           BOUTON VERROUILLER
+        ================================================= */
+
+        function createLockTexture() {
+
+            return createCanvasTexture({
+
+                width:
+                    900,
+
+                height:
+                    220,
+
+                background:
+                    isLocked
+
+                        ? "rgba(150,45,45,0.96)"
+
+                        : "rgba(35,125,70,0.96)",
+
+                title:
+                    isLocked
+
+                        ? "DEVERROUILLER"
+
+                        : "VERROUILLER",
+
+                titleSize:
+                    70,
+
+                centered:
+                    true
+
+            });
+
+        }
+
+
+        let lockButtonTexture =
+            createLockTexture();
+
+
+        const lockButton =
+            createHudPlane(
+
+                0.44,
+
+                0.105,
+
+                lockButtonTexture
+
+            );
+
+
+        lockButton.visible =
+            false;
+
+
+
+        /* =================================================
+           RAFRAICHIR BOUTON LOCK
+        ================================================= */
+
+        function refreshLockButton() {
+
+            const oldTexture =
+                lockButton.material.map;
+
+
+            lockButtonTexture =
+                createLockTexture();
+
+
+            lockButton.material.map =
+                lockButtonTexture;
+
+
+            lockButton.material.needsUpdate =
+                true;
+
+
+            if (oldTexture) {
+
+                oldTexture.dispose();
+
+            }
+
+        }
+
+
+
+        /* =================================================
+           OUVRIR / FERMER MENU
+        ================================================= */
+
+        function setMenuOpen(open) {
+
+            menuOpen =
+                open;
+
+
+            helpPanel.visible =
+                menuOpen;
+
+
+            lockButton.visible =
+                menuOpen;
+
+        }
+
+
+
+        /* =================================================
+           VERROUILLER / DEVERROUILLER
+        ================================================= */
+
+        function toggleLock() {
+
+            isLocked =
+                !isLocked;
+
+
+            isDragging =
+                false;
+
+
+            tiltMode =
+                false;
+
+
+            refreshLockButton();
+
+
+            console.log(
+
+                isLocked
+
+                    ? "CJ Trace verrouillé"
+
+                    : "CJ Trace déverrouillé"
+
+            );
+
+        }
+
+
+
+        /* =================================================
+           HUD QUI SUIT LA TETE
+        ================================================= */
+
+        const hudHeadPosition =
+            new THREE.Vector3();
+
+
+        const hudHeadQuaternion =
+            new THREE.Quaternion();
+
+
+        const hudOffset =
+            new THREE.Vector3();
+
+
+
+        function placeHudElement(
+            mesh,
+            x,
+            y,
+            z
+        ) {
+
+            hudOffset
+
+                .set(
+                    x,
+                    y,
+                    z
+                )
+
+                .applyQuaternion(
+                    hudHeadQuaternion
+                );
+
+
+            mesh.position
+
+                .copy(
+                    hudHeadPosition
+                )
+
+                .add(
+                    hudOffset
+                );
+
+
+            mesh.quaternion.copy(
+                hudHeadQuaternion
+            );
+
+        }
+
+
+
+        function updateHud() {
+
+            const xrCamera =
+                renderer.xr.getCamera(
+                    camera
+                );
+
+
+            xrCamera.getWorldPosition(
+                hudHeadPosition
+            );
+
+
+            xrCamera.getWorldQuaternion(
+                hudHeadQuaternion
+            );
+
+
+            /*
+              Petit ? en bas à droite.
+            */
+
+            placeHudElement(
+
+                menuButton,
+
+                0.32,
+
+                -0.20,
+
+                -0.72
+
+            );
+
+
+            if (menuOpen) {
+
+                placeHudElement(
+
+                    helpPanel,
+
+                    0,
+
+                    0.03,
+
+                    -0.92
+
+                );
+
+
+                placeHudElement(
+
+                    lockButton,
+
+                    0,
+
+                    -0.31,
+
+                    -0.90
+
+                );
+
+            }
+
+        }
+
+
+
+        /* =================================================
+           CALCUL RAYON MANETTE
+        ================================================= */
 
         function updateControllerRay() {
 
             tempMatrix
+
                 .identity()
+
                 .extractRotation(
                     controller.matrixWorld
                 );
@@ -561,29 +1181,22 @@ async function startARSession() {
                 .normalize();
 
 
-            raycaster
-                .ray
-                .origin
-                .copy(
-                    rayOrigin
-                );
+            raycaster.ray.origin.copy(
+                rayOrigin
+            );
 
 
-            raycaster
-                .ray
-                .direction
-                .copy(
-                    rayDirection
-                );
+            raycaster.ray.direction.copy(
+                rayDirection
+            );
 
         }
 
 
 
-        /* ==============================
-           GACHETTE PRINCIPALE
-           SAISIR IMAGE
-        ================================ */
+        /* =================================================
+           GACHETTE AVANT
+        ================================================= */
 
         controller.addEventListener(
             "selectstart",
@@ -592,17 +1205,111 @@ async function startARSession() {
                 updateControllerRay();
 
 
-                const intersections =
-                    raycaster
-                        .intersectObject(
-                            drawing,
-                            false
-                        );
+
+                /* -----------------------------------------
+                   D'ABORD : INTERFACE
+                ----------------------------------------- */
+
+                const uiObjects =
+                    [menuButton];
+
+
+                if (menuOpen) {
+
+                    uiObjects.push(
+                        lockButton
+                    );
+
+                }
+
+
+                const uiHits =
+                    raycaster.intersectObjects(
+
+                        uiObjects.filter(
+                            object =>
+                                object.visible
+                        ),
+
+                        false
+
+                    );
 
 
                 if (
-                    intersections.length
-                    === 0
+                    uiHits.length > 0
+                ) {
+
+                    const object =
+                        uiHits[0].object;
+
+
+                    /*
+                      Clic sur ?
+                    */
+
+                    if (
+                        object ===
+                        menuButton
+                    ) {
+
+                        setMenuOpen(
+                            !menuOpen
+                        );
+
+                        return;
+
+                    }
+
+
+                    /*
+                      Clic sur verrouillage
+                    */
+
+                    if (
+                        object ===
+                        lockButton
+                    ) {
+
+                        toggleLock();
+
+                        return;
+
+                    }
+
+                }
+
+
+
+                /* -----------------------------------------
+                   SI VERROUILLE
+                ----------------------------------------- */
+
+                if (isLocked) {
+
+                    return;
+
+                }
+
+
+
+                /* -----------------------------------------
+                   SAISIR DESSIN
+                ----------------------------------------- */
+
+                const intersections =
+                    raycaster.intersectObject(
+
+                        drawing,
+
+                        false
+
+                    );
+
+
+                if (
+                    intersections.length ===
+                    0
                 ) {
 
                     return;
@@ -652,6 +1359,10 @@ async function startARSession() {
 
 
 
+        /* =================================================
+           RELACHER
+        ================================================= */
+
         controller.addEventListener(
             "selectend",
             () => {
@@ -664,24 +1375,23 @@ async function startARSession() {
 
 
 
-        /* ==============================
-           GACHETTE ARRIERE / GRIP
-
-           Maintenue =
-           mode inclinaison 3D
-        ================================ */
+        /* =================================================
+           GRIP = MODE INCLINAISON
+        ================================================= */
 
         controller.addEventListener(
             "squeezestart",
             () => {
 
+                if (isLocked) {
+
+                    return;
+
+                }
+
+
                 tiltMode =
                     true;
-
-
-                console.log(
-                    "Mode inclinaison activé"
-                );
 
             }
         );
@@ -694,30 +1404,24 @@ async function startARSession() {
                 tiltMode =
                     false;
 
-
-                console.log(
-                    "Mode inclinaison désactivé"
-                );
-
             }
         );
 
 
 
-        /* ==============================
-           ACTIVE SESSION THREE
-        ================================ */
+        /* =================================================
+           ACTIVE LA SESSION THREE
+        ================================================= */
 
-        await renderer.xr
-            .setSession(
-                session
-            );
-
+        await renderer.xr.setSession(
+            session
+        );
 
 
-        /* ==============================
+
+        /* =================================================
            BOUCLE XR
-        ================================ */
+        ================================================= */
 
         let previousTime =
             performance.now();
@@ -749,14 +1453,25 @@ async function startARSession() {
 
 
 
-                /* ======================
+                /* =========================================
+                   MENU
+                ========================================= */
+
+                updateHud();
+
+
+
+                /* =========================================
                    DEPLACEMENT
-                ====================== */
+                ========================================= */
 
                 updateControllerRay();
 
 
-                if (isDragging) {
+                if (
+                    isDragging &&
+                    !isLocked
+                ) {
 
                     const newPosition =
                         rayOrigin
@@ -788,9 +1503,9 @@ async function startARSession() {
 
 
 
-                /* ======================
+                /* =========================================
                    GAMEPAD
-                ====================== */
+                ========================================= */
 
                 for (
                     const inputSource
@@ -798,9 +1513,7 @@ async function startARSession() {
                 ) {
 
                     if (
-                        inputSource
-                            .targetRayMode
-                        !==
+                        inputSource.targetRayMode !==
                         "tracked-pointer"
                     ) {
 
@@ -834,7 +1547,6 @@ async function startARSession() {
                     }
 
 
-
                     const stickX =
                         axes[
                             axes.length - 2
@@ -852,43 +1564,46 @@ async function startARSession() {
 
 
 
-                    /* ======================
-                       MODE NORMAL
-                    ====================== */
+                    /* =====================================
+                       TOUT BLOQUE SI VERROUILLE
+                    ===================================== */
 
-                    if (!tiltMode) {
-
-
-                        /* ------------------
-                           TAILLE
-                        ------------------ */
-
-                        if (
-                            Math.abs(
-                                stickY
-                            )
-                            >
-                            deadZone
-                        ) {
-
-                            let scale =
-                                drawing
-                                    .scale
-                                    .x;
+                    if (!isLocked) {
 
 
-                            scale +=
+                        /* ---------------------------------
+                           MODE NORMAL
+                        --------------------------------- */
 
-                                (-stickY)
-
-                                * delta
-
-                                * 0.8;
+                        if (!tiltMode) {
 
 
-                            scale =
-                                THREE.MathUtils
-                                    .clamp(
+                            /*
+                              TAILLE
+                            */
+
+                            if (
+                                Math.abs(
+                                    stickY
+                                ) >
+                                deadZone
+                            ) {
+
+                                let scale =
+                                    drawing.scale.x;
+
+
+                                scale +=
+
+                                    (-stickY)
+
+                                    * delta
+
+                                    * 0.8;
+
+
+                                scale =
+                                    THREE.MathUtils.clamp(
 
                                         scale,
 
@@ -899,126 +1614,103 @@ async function startARSession() {
                                     );
 
 
-                            drawing.scale.set(
+                                drawing.scale.set(
 
-                                scale,
+                                    scale,
 
-                                scale,
+                                    scale,
 
-                                scale
+                                    scale
 
-                            );
+                                );
 
-                        }
-
-
-
-                        /* ------------------
-                           ROTATION A PLAT
-                        ------------------ */
-
-                        if (
-                            Math.abs(
-                                stickX
-                            )
-                            >
-                            deadZone
-                        ) {
-
-                            drawing.rotation.z +=
-
-                                (-stickX)
-
-                                * delta
-
-                                * 1.2;
-
-                        }
-
-                    }
+                            }
 
 
+                            /*
+                              ROTATION A PLAT
+                            */
 
-                    /* ======================
-                       MODE INCLINAISON 3D
+                            if (
+                                Math.abs(
+                                    stickX
+                                ) >
+                                deadZone
+                            ) {
 
-                       Grip maintenu
-                    ====================== */
+                                drawing.rotation.z +=
 
-                    if (tiltMode) {
+                                    (-stickX)
 
+                                    * delta
 
-                        /* ------------------
-                           AVANT / ARRIERE
+                                    * 1.2;
 
-                           Angle du chevalet
-                        ------------------ */
-
-                        if (
-                            Math.abs(
-                                stickY
-                            )
-                            >
-                            deadZone
-                        ) {
-
-                            drawing.rotation.x +=
-
-                                (-stickY)
-
-                                * delta
-
-                                * 0.9;
+                            }
 
                         }
 
 
 
-                        /* ------------------
-                           GAUCHE / DROITE
+                        /* ---------------------------------
+                           MODE INCLINAISON
+                        --------------------------------- */
 
-                           Si la toile est
-                           également tournée
-                           latéralement.
-                        ------------------ */
-
-                        if (
-                            Math.abs(
-                                stickX
-                            )
-                            >
-                            deadZone
-                        ) {
-
-                            drawing.rotation.y +=
-
-                                (-stickX)
-
-                                * delta
-
-                                * 0.9;
-
-                        }
+                        if (tiltMode) {
 
 
+                            /*
+                              AVANT / ARRIERE
+                            */
 
-                        /*
-                          Limites de sécurité.
+                            if (
+                                Math.abs(
+                                    stickY
+                                ) >
+                                deadZone
+                            ) {
 
-                          +/- 75 degrés
-                          maximum.
-                        */
+                                drawing.rotation.x +=
 
-                        const maxTilt =
-                            THREE.MathUtils
-                                .degToRad(
+                                    (-stickY)
+
+                                    * delta
+
+                                    * 0.9;
+
+                            }
+
+
+                            /*
+                              GAUCHE / DROITE
+                            */
+
+                            if (
+                                Math.abs(
+                                    stickX
+                                ) >
+                                deadZone
+                            ) {
+
+                                drawing.rotation.y +=
+
+                                    (-stickX)
+
+                                    * delta
+
+                                    * 0.9;
+
+                            }
+
+
+                            const maxTilt =
+                                THREE.MathUtils.degToRad(
                                     75
                                 );
 
 
-                        drawing.rotation.x =
-                            THREE.MathUtils
-                                .clamp(
+                            drawing.rotation.x =
+                                THREE.MathUtils.clamp(
 
                                     drawing.rotation.x,
 
@@ -1029,9 +1721,8 @@ async function startARSession() {
                                 );
 
 
-                        drawing.rotation.y =
-                            THREE.MathUtils
-                                .clamp(
+                            drawing.rotation.y =
+                                THREE.MathUtils.clamp(
 
                                     drawing.rotation.y,
 
@@ -1041,55 +1732,49 @@ async function startARSession() {
 
                                 );
 
-                    }
+                        }
 
 
 
-                    /* ======================
-                       OPACITE
-                    ====================== */
+                        /* ---------------------------------
+                           OPACITE
+                        --------------------------------- */
 
-                    const buttons =
-                        gamepad.buttons;
-
-
-                    if (buttons) {
+                        const buttons =
+                            gamepad.buttons;
 
 
-                        const plusButton =
-                            buttons[4];
+                        if (buttons) {
+
+                            const plusButton =
+                                buttons[4];
 
 
-                        const minusButton =
-                            buttons[5];
+                            const minusButton =
+                                buttons[5];
 
 
+                            const plusNow =
+                                Boolean(
 
-                        const plusNow =
-                            Boolean(
+                                    plusButton &&
 
-                                plusButton &&
+                                    plusButton.pressed
 
-                                plusButton.pressed
-
-                            );
-
-
-                        if (
-
-                            plusNow &&
-
-                            !opacityPlusPressed
-
-                        ) {
-
-                            material.opacity +=
-                                0.10;
+                                );
 
 
-                            material.opacity =
-                                THREE.MathUtils
-                                    .clamp(
+                            if (
+                                plusNow &&
+                                !opacityPlusPressed
+                            ) {
+
+                                material.opacity +=
+                                    0.10;
+
+
+                                material.opacity =
+                                    THREE.MathUtils.clamp(
 
                                         material.opacity,
 
@@ -1099,54 +1784,35 @@ async function startARSession() {
 
                                     );
 
-
-                            console.log(
-
-                                "Opacité :",
-
-                                Math.round(
-
-                                    material.opacity
-                                    * 100
-
-                                )
-                                + "%"
-
-                            );
-
-                        }
+                            }
 
 
-                        opacityPlusPressed =
-                            plusNow;
+                            opacityPlusPressed =
+                                plusNow;
 
 
 
-                        const minusNow =
-                            Boolean(
+                            const minusNow =
+                                Boolean(
 
-                                minusButton &&
+                                    minusButton &&
 
-                                minusButton.pressed
+                                    minusButton.pressed
 
-                            );
-
-
-                        if (
-
-                            minusNow &&
-
-                            !opacityMinusPressed
-
-                        ) {
-
-                            material.opacity -=
-                                0.10;
+                                );
 
 
-                            material.opacity =
-                                THREE.MathUtils
-                                    .clamp(
+                            if (
+                                minusNow &&
+                                !opacityMinusPressed
+                            ) {
+
+                                material.opacity -=
+                                    0.10;
+
+
+                                material.opacity =
+                                    THREE.MathUtils.clamp(
 
                                         material.opacity,
 
@@ -1156,26 +1822,13 @@ async function startARSession() {
 
                                     );
 
+                            }
 
-                            console.log(
 
-                                "Opacité :",
-
-                                Math.round(
-
-                                    material.opacity
-                                    * 100
-
-                                )
-                                + "%"
-
-                            );
+                            opacityMinusPressed =
+                                minusNow;
 
                         }
-
-
-                        opacityMinusPressed =
-                            minusNow;
 
                     }
 
@@ -1186,9 +1839,9 @@ async function startARSession() {
 
 
 
-                /* ======================
+                /* =========================================
                    RENDU
-                ====================== */
+                ========================================= */
 
                 renderer.render(
 
@@ -1203,18 +1856,17 @@ async function startARSession() {
 
 
 
-        /* ==============================
-           FIN SESSION
-        ================================ */
+        /* =================================================
+           FIN DE SESSION
+        ================================================= */
 
         session.addEventListener(
             "end",
             () => {
 
-                renderer
-                    .setAnimationLoop(
-                        null
-                    );
+                renderer.setAnimationLoop(
+                    null
+                );
 
 
                 geometry.dispose();
@@ -1223,9 +1875,32 @@ async function startARSession() {
 
                 texture.dispose();
 
+
                 rayGeometry.dispose();
 
                 rayMaterial.dispose();
+
+
+                menuButton.geometry.dispose();
+
+                menuButton.material.map?.dispose();
+
+                menuButton.material.dispose();
+
+
+                helpPanel.geometry.dispose();
+
+                helpPanel.material.map?.dispose();
+
+                helpPanel.material.dispose();
+
+
+                lockButton.geometry.dispose();
+
+                lockButton.material.map?.dispose();
+
+                lockButton.material.dispose();
+
 
                 renderer.dispose();
 
