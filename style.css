@@ -1,0 +1,251 @@
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+
+    font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
+
+    background:
+        #10121a;
+
+    color:
+        white;
+
+    min-height:
+        100vh;
+}
+
+
+/* HEADER */
+
+header {
+    padding:
+        22px 30px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #20243a,
+            #363b67
+        );
+
+    border-bottom:
+        1px solid
+        rgba(255,255,255,.1);
+}
+
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+
+.logo-text {
+
+    width: 55px;
+    height: 55px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 14px;
+
+    background:
+        #755cff;
+
+    font-size: 22px;
+    font-weight: bold;
+}
+
+
+h1 {
+    margin: 0;
+}
+
+
+header p {
+    margin:
+        4px 0 0;
+
+    color:
+        #b9bdd1;
+}
+
+
+/* CONTENU */
+
+main {
+
+    max-width:
+        900px;
+
+    margin:
+        0 auto;
+
+    padding:
+        60px 25px;
+
+    text-align:
+        center;
+}
+
+
+.screen {
+
+    background:
+        #191c29;
+
+    border:
+        1px solid
+        rgba(255,255,255,.08);
+
+    border-radius:
+        20px;
+
+    padding:
+        45px 30px;
+
+    box-shadow:
+        0 20px 50px
+        rgba(0,0,0,.25);
+}
+
+
+.help {
+
+    color:
+        #aeb3c7;
+
+    margin-bottom:
+        30px;
+}
+
+
+/* BOUTONS */
+
+button {
+
+    border:
+        none;
+
+    border-radius:
+        12px;
+
+    padding:
+        15px 25px;
+
+    font-size:
+        17px;
+
+    cursor:
+        pointer;
+
+    background:
+        #755cff;
+
+    color:
+        white;
+
+    transition:
+        .2s;
+}
+
+
+button:hover {
+
+    transform:
+        translateY(-2px);
+
+    background:
+        #866fff;
+}
+
+
+.secondary {
+
+    background:
+        #34384e;
+}
+
+
+/* APERÇU */
+
+.preview-container {
+
+    width:
+        100%;
+
+    max-width:
+        500px;
+
+    margin:
+        25px auto;
+
+    padding:
+        15px;
+
+    border-radius:
+        16px;
+
+    background:
+        #0e1017;
+}
+
+
+#previewImage {
+
+    max-width:
+        100%;
+
+    max-height:
+        500px;
+
+    display:
+        block;
+
+    margin:
+        auto;
+
+    border-radius:
+        8px;
+}
+
+
+.buttons {
+
+    display:
+        flex;
+
+    justify-content:
+        center;
+
+    gap:
+        15px;
+
+    flex-wrap:
+        wrap;
+}
+
+
+.hidden {
+    display:
+        none;
+}
+
+
+#status {
+
+    margin-top:
+        20px;
+
+    color:
+        #aeb3c7;
+}

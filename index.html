@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>CJ Trace</title>
+
+    <meta name="theme-color" content="#755cff">
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<header>
+    <div class="brand">
+        <div class="logo-text">CJ</div>
+
+        <div>
+            <h1>CJ Trace</h1>
+            <p>Trace tes créations en réalité augmentée</p>
+        </div>
+    </div>
+</header>
+
+
+<main>
+
+    <!-- ÉCRAN ACCUEIL -->
+    <section id="homeScreen" class="screen">
+
+        <h2>Choisis ton dessin</h2>
+
+        <p class="help">
+            Sélectionne une image PNG, JPG ou WEBP.
+        </p>
+
+        <input
+            type="file"
+            id="imagePicker"
+            accept="image/png,image/jpeg,image/webp"
+            hidden
+        >
+
+        <button id="chooseImage">
+            Choisir une image
+        </button>
+
+    </section>
+
+
+    <!-- APERÇU -->
+    <section
+        id="previewScreen"
+        class="screen hidden"
+    >
+
+        <h2>Ton dessin</h2>
+
+        <div class="preview-container">
+            <img
+                id="previewImage"
+                alt="Dessin sélectionné"
+            >
+        </div>
+
+        <div class="buttons">
+
+            <button
+                id="changeImage"
+                class="secondary"
+            >
+                Changer d’image
+            </button>
+
+            <button id="startAR">
+                Commencer
+            </button>
+
+        </div>
+
+    </section>
+
+
+    <!-- MESSAGE -->
+    <p id="status" role="status" aria-live="polite"></p>
+
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js"></script>
+<script src="app.js"></script>
+
+</body>
+</html>
