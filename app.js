@@ -326,6 +326,167 @@ async function startARSession() {
 
     scene.add(drawing);
 
+    /* ==============================
+   CONTROLEUR PICO
+================================ */
+
+const controller =
+    renderer.xr.getController(0);
+
+scene.add(controller);
+
+
+/*
+   Petit rayon visible depuis
+   la manette pour viser le dessin
+*/
+
+const rayGeometry =
+    new THREE.BufferGeometry().setFromPoints([
+        new THREE.Vector3(0, 0, 0),
+        new THREE.Vector3(0, 0, -3)
+    ]);
+
+const rayMaterial =
+    new THREE.LineBasicMaterial({
+        color: 0xffffff
+    });
+
+const controllerRay =
+    new THREE.Line(
+        rayGeometry,
+        rayMaterial
+    );
+
+controller.add(controllerRay);
+
+
+/*
+   Outils pour déplacer l'image
+*/
+
+const raycaster =
+    new THREE.Raycaster();
+
+const tempMatrix =
+    new THREE.Matrix4();
+
+const rayOrigin =
+    new THREE.Vector3();
+
+const rayDirection =
+    new THREE.Vector3();
+
+const grabOffset =
+    new THREE.Vector3();
+
+let isDragging = false;
+
+let grabDistance = 1.5;
+
+
+/*
+   Calcule le rayon qui part
+   de la manette PICO
+*/
+
+function updateControllerRay() {
+
+    tempMatrix.identity().extractRotation(
+        controller.matrixWorld
+    );
+
+    rayOrigin.setFromMatrixPosition(
+        controller.matrixWorld
+    );
+
+    rayDirection
+        .set(0, 0, -1)
+        .applyMatrix4(tempMatrix)
+        .normalize();
+
+    raycaster.ray.origin.copy(
+        rayOrigin
+    );
+
+    raycaster.ray.direction.copy(
+        rayDirection
+    );
+
+}
+
+
+/* ==============================
+   GACHETTE : SAISIR
+================================ */
+
+controller.addEventListener(
+    "selectstart",
+    () => {
+
+        updateControllerRay();
+
+        const intersections =
+            raycaster.intersectObject(
+                drawing,
+                false
+            );
+
+        if (intersections.length === 0) {
+            return;
+        }
+
+
+        isDragging = true;
+
+
+        /*
+          Distance entre la manette
+          et le point visé sur l'image
+        */
+
+        grabDistance =
+            intersections[0].distance;
+
+
+        /*
+          Permet de saisir l'image
+          exactement à l'endroit
+          où on l'a attrapée
+        */
+
+        const targetPoint =
+            rayOrigin
+                .clone()
+                .add(
+                    rayDirection
+                        .clone()
+                        .multiplyScalar(
+                            grabDistance
+                        )
+                );
+
+        grabOffset
+            .copy(drawing.position)
+            .sub(targetPoint);
+
+    }
+);
+
+
+/* ==============================
+   RELACHER
+================================ */
+
+controller.addEventListener(
+    "selectend",
+    () => {
+
+        isDragging = false;
+
+    }
+);
+
 
     await renderer.xr.setSession(
         session
@@ -336,14 +497,165 @@ async function startARSession() {
       BOUCLE DE RENDU
     */
 
-    renderer.setAnimationLoop(() => {
+    /* ==============================
+   BOUCLE DE RENDU XR
+================================ */
 
-        renderer.render(
-            scene,
-            camera
+let previousTime =
+    performance.now();
+
+
+renderer.setAnimationLoop(() => {
+
+    const now =
+        performance.now();
+
+    const delta =
+        Math.min(
+            (now - previousTime) / 1000,
+            0.1
         );
 
-    });
+    previousTime = now;
+
+
+    /* --------------------------
+       DEPLACEMENT
+    --------------------------- */
+
+    updateControllerRay();
+
+
+    if (isDragging) {
+
+        const newPosition =
+            rayOrigin
+                .clone()
+                .add(
+                    rayDirection
+                        .clone()
+                        .multiplyScalar(
+                            grabDistance
+                        )
+                )
+                .add(grabOffset);
+
+
+        drawing.position.copy(
+            newPosition
+        );
+
+    }
+
+
+    /* --------------------------
+       JOYSTICK = TAILLE
+    --------------------------- */
+
+    for (
+        const inputSource
+        of session.inputSources
+    ) {
+
+        if (
+            inputSource.targetRayMode
+                !== "tracked-pointer"
+        ) {
+            continue;
+        }
+
+
+        const gamepad =
+            inputSource.gamepad;
+
+
+        if (!gamepad) {
+            continue;
+        }
+
+
+        const axes =
+            gamepad.axes;
+
+
+        if (
+            !axes ||
+            axes.length < 2
+        ) {
+            continue;
+        }
+
+
+        /*
+          On prend l'axe vertical
+          du dernier stick disponible.
+
+          Cela permet d'être assez
+          tolérant avec le mapping PICO.
+        */
+
+        const stickY =
+            axes[axes.length - 1];
+
+
+        const deadZone = 0.25;
+
+
+        if (
+            Math.abs(stickY)
+            > deadZone
+        ) {
+
+            /*
+              Stick vers le haut :
+              agrandir
+
+              Stick vers le bas :
+              réduire
+            */
+
+            let scale =
+                drawing.scale.x;
+
+
+            scale +=
+                (-stickY)
+                * delta
+                * 0.8;
+
+
+            /*
+              On empêche une taille
+              ridicule ou gigantesque.
+            */
+
+            scale =
+                THREE.MathUtils.clamp(
+                    scale,
+                    0.15,
+                    5
+                );
+
+
+            drawing.scale.set(
+                scale,
+                scale,
+                scale
+            );
+
+        }
+
+        break;
+
+    }
+
+
+    renderer.render(
+        scene,
+        camera
+    );
+
+});
 
 
     /*
